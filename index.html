@@ -18,8 +18,18 @@
 
             // Initialize Vector Layer
             var vectorLayer = new ol.layer.Vector({
-                source: null
+                source: null,
+                style: function(feature, resolution) {
+                    return new ol.style.Style({
+                        image: new ol.style.Icon({
+                            scale : 0.08,
+                            src: 'plane.png',
+                            rotation: feature.get('bearing'),
+                        }),
+                    });
+                }
             });
+                
 
             // Initialize Map
             var map = new ol.Map({
@@ -38,33 +48,40 @@
 
             // Function: Update Map
             function updateMap() {
-                fetch('.')
-                    .then(response => {
 
-                        // Initialize features arrays
-                        var features = new Array(1);
+                fetch('https://opensky-network.org/api/states/all')
+                .then(function(response){
+                    if (response.ok) {
+                        return response.json();
+                    }
+                })
+                .then(function(data){
 
-                        // Add a feature in Lon,Lat of 0,0
-                        features[0] = new ol.Feature(
-                                        new ol.geom.Point(ol.proj.fromLonLat([0, 0])));
-    
-                        // Set style of feature plane
-                        features[0].setStyle(
-                            new ol.style.Style({
-                                image: new ol.style.Icon({
-                                    scale : 0.08,
-                                    src: 'plane.png',
-                                    rotation: 0,
-                                }),
-                            })
-                        );
+                    // Initialize features arrays
+                    var features = new ol.source.Vector();
+
+                    // Go through every states
+                    for (var i = 0; i < data.states.length; ++i) {
+
+                        // Create a feature in Lon,Lat of state
+                        var point = new ol.geom.Point(ol.proj.fromLonLat([data.states[i][5], data.states[i][6]]));
                         
-                        // Set new features as source to vector layer
-                        vectorLayer.setSource(new ol.source.Vector({
-                            features: features,
-                        }));
+                        // Create feature
+                        var feature = new ol.Feature({
+                            geometry: point,
+                            name : "plane",
+                            bearing: data.states[i][10],
+                        });
 
-                    });
+                        // Add feature to plane_features vector source
+                        features.addFeature(feature);
+
+                    }
+
+                    // Set plane features as vector source to vectorLayer
+                    vectorLayer.setSource(features);
+
+                });
             }
 
             
