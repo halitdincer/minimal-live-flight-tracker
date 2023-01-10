@@ -9,6 +9,8 @@
   <!-- Open Layers -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.2.2/ol.css" type="text/css">
   <script src="https://cdn.jsdelivr.net/npm/ol@v7.2.2/dist/ol.js"></script>
+  
+  <!-- Styling -->
   <style>
     html, body {
       width: 100%;
@@ -29,6 +31,10 @@
       top: 65px;
       left: .5em;
     }
+    .set-geolocation {
+      top: 95px;
+      left: .5em;
+    }
     .refresh-map {
       bottom: 25px;
       right: .5em;
@@ -39,6 +45,9 @@
     }
     .ol-touch .refresh-map {
       bottom: 100px;
+    }
+    .ol-touch .set-geolocation {
+      top: 110px;
     }
     .ol-touch .rotate-north {
       top: 80px;
@@ -51,6 +60,21 @@
 
   <div id="map" class="map" style="border: 1px solid black; width: 100%;height:100%;"></div>
   <script>
+
+  
+    const view = new ol.View({
+      center: [0, 0],
+      zoom: 2,
+    });
+
+    var geolocation = new ol.Geolocation({
+      trackingOptions: {
+        enableHighAccuracy: true,
+      },
+      projection: view.getProjection(),
+      tracking: true
+    });
+
 
     class RotateNorthControl extends ol.control.Control {
       /**
@@ -114,23 +138,23 @@
 
             // Initialize features arrays
             var features = new ol.source.Vector();
-
+            
             // Go through every states
             for (var i = 0; i < data.states.length; ++i) {
 
               // Create a feature in Lon,Lat of state
               var point = new ol.geom.Point(ol.proj.fromLonLat([data.states[i][5], data.states[i][6]]));
-
-              // Create feature
-              var feature = new ol.Feature({
+              
+              // Create feature of plane in correct bearing
+              var plane_feature = new ol.Feature({
                 geometry: point,
                 name: "plane",
                 bearing: data.states[i][10],
               });
 
-              // Add feature to plane_features vector source
-              features.addFeature(feature);
-
+              // Add the plane feature to the features of vectorLayer
+              features.addFeature(plane_feature);
+              
             }
 
             // Set plane features as vector source to vectorLayer
@@ -141,13 +165,48 @@
 
     }
 
+    class SetGeolocation extends ol.control.Control {
+      /**
+       * @param {Object} [opt_options] Control options.
+       */
+      constructor(opt_options) {
+        const options = opt_options || {};
+
+        const button = document.createElement('button');
+        button.innerHTML = 'G';
+
+        const element = document.createElement('div');
+        element.className = 'set-geolocation ol-unselectable ol-control';
+        element.appendChild(button);
+
+        super({
+          element: element,
+          target: options.target,
+        });
+
+        button.addEventListener('click', this.findUserLocation.bind(this), false);
+      }
+
+      // Function: Find User Location
+      findUserLocation() {
+
+          map.setView(new ol.View({
+            center: geolocation.getPosition(),
+            zoom: 10
+          }));
+
+      }
+
+    }
+
+
     // Initialize: Vector Layer
     var vectorLayer = new ol.layer.Vector({
       source: null,
       style: function (feature, resolution) {
         return new ol.style.Style({
           image: new ol.style.Icon({
-            scale: 0.08,
+            scale: 0.06,
             src: 'plane.png',
             rotation: feature.get('bearing'),
           }),
@@ -164,16 +223,17 @@
         vectorLayer,
       ],
       target: 'map',
-      view: new ol.View({
-        center: [0, 0],
-        zoom: 2
-      }),
+      view: view,
       controls: ol.control.defaults.defaults().extend([
         new RotateNorthControl(),
         new RefreshMap(),
+        new SetGeolocation(),
         new ol.control.FullScreen()
       ])
     });
+
+    
+    
 
   </script>
 </body>
