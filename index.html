@@ -6,17 +6,136 @@
   <title>Live Flight Tracker</title>
 
   <!-- Open Layers -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.1.0/ol.css" type="text/css">
-  <script src="https://cdn.jsdelivr.net/npm/ol@v7.1.0/dist/ol.js"></script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@v7.2.2/ol.css" type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/ol@v7.2.2/dist/ol.js"></script>
+  <style>
+    .map:-webkit-full-screen {
+      height: 100%;
+      margin: 0;
+    }
+    .map:fullscreen {
+      height: 100%;
+    }
+    .map .ol-rotate {
+      top: 3em;
+    }
+    .rotate-north {
+      top: 65px;
+      left: .5em;
+    }
+    .refresh-map {
+      bottom: 25px;
+      right: .5em;
+    }
+    .refresh-map button{
+      width: max-content;
+      padding: 5px ;
+    }
+    .ol-touch .refresh-map {
+      bottom: 40px;
+    }
+    .ol-touch .rotate-north {
+      top: 80px;
+    }
+  </style>
 
 </head>
 
 <body>
 
-  <div id="map" class="map" style="border: 1px solid black; width: 100%;height:85vh;"></div>
-  <button onclick="updateMap()">Refresh Map</button>
-
+  <div id="map" class="map" style="border: 1px solid black; width: 100%;height:95vh;"></div>
   <script>
+
+    class RotateNorthControl extends ol.control.Control {
+      /**
+       * @param {Object} [opt_options] Control options.
+       */
+      constructor(opt_options) {
+        const options = opt_options || {};
+
+        const button = document.createElement('button');
+        button.innerHTML = 'N';
+
+        const element = document.createElement('div');
+        element.className = 'rotate-north ol-unselectable ol-control';
+        element.appendChild(button);
+
+        super({
+          element: element,
+          target: options.target,
+        });
+
+        button.addEventListener('click', this.handleRotateNorth.bind(this), false);
+      }
+
+      handleRotateNorth() {
+        this.getMap().getView().setRotation(0);
+      }
+    }
+
+    class RefreshMap extends ol.control.Control {
+      /**
+       * @param {Object} [opt_options] Control options.
+       */
+      constructor(opt_options) {
+        const options = opt_options || {};
+
+        const button = document.createElement('button');
+        button.innerHTML = 'Refresh';
+
+        const element = document.createElement('div');
+        element.className = 'refresh-map ol-unselectable ol-control';
+        element.appendChild(button);
+
+        super({
+          element: element,
+          target: options.target,
+        });
+
+        button.addEventListener('click', this.updateMap.bind(this), false);
+      }
+
+      // Function: Update Map
+      updateMap() {
+
+        fetch('https://opensky-network.org/api/states/all')
+          .then(function (response) {
+            if (response.ok) {
+              return response.json();
+            }
+          })
+          .then(function (data) {
+
+            // Initialize features arrays
+            var features = new ol.source.Vector();
+
+            // Go through every states
+            for (var i = 0; i < data.states.length; ++i) {
+
+              // Create a feature in Lon,Lat of state
+              var point = new ol.geom.Point(ol.proj.fromLonLat([data.states[i][5], data.states[i][6]]));
+
+              // Create feature
+              var feature = new ol.Feature({
+                geometry: point,
+                name: "plane",
+                bearing: data.states[i][10],
+              });
+
+              // Add feature to plane_features vector source
+              features.addFeature(feature);
+
+            }
+
+            // Set plane features as vector source to vectorLayer
+            vectorLayer.setSource(features);
+
+          });
+        }
+
+    }
+
+
 
     // Initialize Vector Layer
     var vectorLayer = new ol.layer.Vector({
@@ -45,50 +164,13 @@
       view: new ol.View({
         center: [0, 0],
         zoom: 2
-      })
+      }),
+      controls: ol.control.defaults.defaults().extend([
+        new RotateNorthControl(),
+        new RefreshMap(),
+        new ol.control.FullScreen()
+      ])
     });
-
-    // Function: Update Map
-    function updateMap() {
-
-      fetch('https://opensky-network.org/api/states/all')
-        .then(function (response) {
-          if (response.ok) {
-            return response.json();
-          }
-        })
-        .then(function (data) {
-
-          // Initialize features arrays
-          var features = new ol.source.Vector();
-
-          // Go through every states
-          for (var i = 0; i < data.states.length; ++i) {
-
-            // Create a feature in Lon,Lat of state
-            var point = new ol.geom.Point(ol.proj.fromLonLat([data.states[i][5], data.states[i][6]]));
-
-            // Create feature
-            var feature = new ol.Feature({
-              geometry: point,
-              name: "plane",
-              bearing: data.states[i][10],
-            });
-
-            // Add feature to plane_features vector source
-            features.addFeature(feature);
-
-          }
-
-          // Set plane features as vector source to vectorLayer
-          vectorLayer.setSource(features);
-
-        });
-    }
-
-
-
-
 
   </script>
 </body>
