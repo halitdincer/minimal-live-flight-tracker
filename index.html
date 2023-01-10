@@ -206,7 +206,7 @@
       style: function (feature, resolution) {
         return new ol.style.Style({
           image: new ol.style.Icon({
-            scale: 0.06,
+            scale: 1/Math.pow(resolution, 1.95/2),
             src: 'plane.png',
             rotation: feature.get('bearing'),
           }),
