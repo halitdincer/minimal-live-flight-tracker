@@ -57,9 +57,9 @@
     #alert-box {
       display: none;
 
-      position: relative;
-      bottom: 75px;
-      left: 20px ;
+      position: absolute;
+      top: 25px;
+      right: 50px ;
 
       width: max-content;
       padding: 20px;
@@ -68,6 +68,7 @@
       margin-bottom: 15px;
       z-index: 1000;
     }
+
   </style>
 
 </head>
@@ -153,13 +154,14 @@
               return response.json();
             }else{
               if(response.status == 429){
-                document.getElementById("alert-box").innerHTML = "‼ reached API call limit ‼";
+                document.getElementById("alert-box").innerHTML = "Error 429: reached API call limit ‼";
               }else if(response.status == 404){
-                document.getElementById("alert-box").innerHTML = "‼ 404 Not Found ‼";
+                document.getElementById("alert-box").innerHTML = "Error 404: API server Not Found ‼";
               }else{
-                document.getElementById("alert-box").innerHTML = "‼ unknown API call error ‼";
+                document.getElementById("alert-box").innerHTML = "Error : unknown API response ‼";
               }
               document.getElementById("alert-box").style.display = "block";
+              setTimeout(function(){ document.getElementById("alert-box").style.display = "none"; }, 3000);
             }
           })
           .then(function (data) {
