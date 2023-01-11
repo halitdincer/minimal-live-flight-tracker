@@ -148,11 +148,9 @@
       // Function: Update Map
       updateMap() {
 
-        fetch('https://opensky-network.org/api/states/all', {
-          headers: new Headers({
-              'Authorization': 'Basic '+btoa('halitdincer:AbTe0fzg')
-          })
-        })
+        fetch('https://opensky-network.org/api/states/all'
+        //,{headers: new Headers({'Authorization': 'Basic '+btoa('username:password')})}
+        )
           .then(function (response) {
             if (response.ok) {
               return response.json();
