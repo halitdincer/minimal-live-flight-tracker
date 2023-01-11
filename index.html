@@ -52,6 +52,22 @@
     .ol-touch .rotate-north {
       top: 80px;
     }
+
+    /* The alert message box */
+    #alert-box {
+      display: none;
+
+      position: relative;
+      bottom: 75px;
+      left: 20px ;
+
+      width: max-content;
+      padding: 20px;
+      background-color: #f44336; /* Red */
+      color: white;
+      margin-bottom: 15px;
+      z-index: 1000;
+    }
   </style>
 
 </head>
@@ -59,14 +75,17 @@
 <body>
 
   <div id="map" class="map" style="border: 1px solid black; width: 100%;height:100%;"></div>
+  <div id="alert-box">Warning</div>
+
   <script>
 
-  
+    // Initialize: View
     const view = new ol.View({
       center: [0, 0],
       zoom: 2,
     });
 
+    // Initialize: Geolocation 
     var geolocation = new ol.Geolocation({
       trackingOptions: {
         enableHighAccuracy: true,
@@ -75,7 +94,7 @@
       tracking: true
     });
 
-
+    // Controls
     class RotateNorthControl extends ol.control.Control {
       /**
        * @param {Object} [opt_options] Control options.
@@ -132,6 +151,15 @@
           .then(function (response) {
             if (response.ok) {
               return response.json();
+            }else{
+              if(response.status == 429){
+                document.getElementById("alert-box").innerHTML = "‼ reached API call limit ‼";
+              }else if(response.status == 404){
+                document.getElementById("alert-box").innerHTML = "‼ 404 Not Found ‼";
+              }else{
+                document.getElementById("alert-box").innerHTML = "‼ unknown API call error ‼";
+              }
+              document.getElementById("alert-box").style.display = "block";
             }
           })
           .then(function (data) {
@@ -161,7 +189,8 @@
             vectorLayer.setSource(features);
 
           });
-        }
+      
+      }
 
     }
 
@@ -199,14 +228,13 @@
 
     }
 
-
     // Initialize: Vector Layer
     var vectorLayer = new ol.layer.Vector({
       source: null,
       style: function (feature, resolution) {
         return new ol.style.Style({
           image: new ol.style.Icon({
-            scale: 1/Math.pow(resolution, 1.95/2),
+            scale: 1/Math.pow(resolution, 1/1.05),
             src: 'plane.png',
             rotation: feature.get('bearing'),
           }),
@@ -231,9 +259,6 @@
         new ol.control.FullScreen()
       ])
     });
-
-    
-    
 
   </script>
 </body>
