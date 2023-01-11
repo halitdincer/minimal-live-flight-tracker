@@ -148,7 +148,11 @@
       // Function: Update Map
       updateMap() {
 
-        fetch('https://opensky-network.org/api/states/all')
+        fetch('https://opensky-network.org/api/states/all', {
+          headers: new Headers({
+              'Authorization': 'Basic '+btoa('halitdincer:AbTe0fzg')
+          })
+        })
           .then(function (response) {
             if (response.ok) {
               return response.json();
@@ -234,9 +238,11 @@
     var vectorLayer = new ol.layer.Vector({
       source: null,
       style: function (feature, resolution) {
+
         return new ol.style.Style({
           image: new ol.style.Icon({
-            scale: 1/Math.pow(resolution, 1/1.05),
+            //scale: 1/Math.pow(resolution, 1/2),
+            scale: 0.04,
             src: 'plane.png',
             rotation: feature.get('bearing'),
           }),
