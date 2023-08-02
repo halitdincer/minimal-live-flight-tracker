@@ -46,11 +46,12 @@
       bottom: 2em;
       right: 1em;
     }
+
     .ol-refresh button{
-      width: 100%;
-      height: 3em;
-      width: 10em;
+      height: 4em;
+      width: 10em;   
     }
+
 
     /* The alert message box */
     #alert-box {
@@ -74,7 +75,10 @@
         height: 2em;
         width: 2em;
       } 
-      .ol-refresh{
+      .ol-zoom .ol-zoom-out{
+        margin-top: 1em;
+      }
+      .ol-refresh button{
         width: 8em;
         height: 2em;
       }
@@ -117,9 +121,10 @@
 
         const button = document.createElement('button');
         button.innerHTML = 'Refresh';
+        button.className = ''
 
         const element = document.createElement('div');
-        element.className = 'refresh-map ol-unselectable ol-control ol-refresh';
+        element.className = 'ol-unselectable ol-control ol-refresh';
         element.appendChild(button);
 
         super({
