@@ -17,6 +17,7 @@
       height: 100%;
       margin: 0;
     }
+    /* MAP */
     .map:-webkit-full-screen {
       height: 100%;
       margin: 0;
@@ -24,33 +25,31 @@
     .map:fullscreen {
       height: 100%;
     }
-    .map .ol-rotate {
-      top: 3em;
-    }
-    .rotate-north {
-      top: 65px;
-      left: .5em;
-    }
-    .set-geolocation {
-      top: 95px;
-      left: .5em;
-    }
-    .refresh-map {
-      bottom: 25px;
+
+    /* CONTROL BUTTONS */
+    .ol-control button{
+      height: 3em;
+      width: 3em;
+    } 
+
+    .ol-rotate {
+      top: 4em;
       right: .5em;
     }
-    .refresh-map button{
-      width: max-content;
-      padding: 5px ;
+
+    .ol-setgeo {
+      top: 7em;
+      left: .5em;
+    } 
+
+    .ol-refresh{
+      bottom: 2em;
+      right: 1em;
     }
-    .ol-touch .refresh-map {
-      bottom: 35px;
-    }
-    .ol-touch .set-geolocation {
-      top: 110px;
-    }
-    .ol-touch .rotate-north {
-      top: 80px;
+    .ol-refresh button{
+      width: 100%;
+      height: 3em;
+      width: 10em;
     }
 
     /* The alert message box */
@@ -68,6 +67,19 @@
       margin-bottom: 15px;
       z-index: 1000;
     }
+
+    /* Extra small devices (phones, 600px and down) */
+    @media only screen and (max-width: 600px) {
+      .ol-control button{
+        height: 2em;
+        width: 2em;
+      } 
+      .ol-refresh{
+        width: 8em;
+        height: 2em;
+      }
+      
+    } 
 
   </style>
 
@@ -96,33 +108,6 @@
     });
 
     // Controls
-    class RotateNorthControl extends ol.control.Control {
-      /**
-       * @param {Object} [opt_options] Control options.
-       */
-      constructor(opt_options) {
-        const options = opt_options || {};
-
-        const button = document.createElement('button');
-        button.innerHTML = 'N';
-
-        const element = document.createElement('div');
-        element.className = 'rotate-north ol-unselectable ol-control';
-        element.appendChild(button);
-
-        super({
-          element: element,
-          target: options.target,
-        });
-
-        button.addEventListener('click', this.handleRotateNorth.bind(this), false);
-      }
-
-      handleRotateNorth() {
-        this.getMap().getView().setRotation(0);
-      }
-    }
-
     class RefreshMap extends ol.control.Control {
       /**
        * @param {Object} [opt_options] Control options.
@@ -134,7 +119,7 @@
         button.innerHTML = 'Refresh';
 
         const element = document.createElement('div');
-        element.className = 'refresh-map ol-unselectable ol-control';
+        element.className = 'refresh-map ol-unselectable ol-control ol-refresh';
         element.appendChild(button);
 
         super({
@@ -209,7 +194,7 @@
         button.innerHTML = 'G';
 
         const element = document.createElement('div');
-        element.className = 'set-geolocation ol-unselectable ol-control';
+        element.className = 'set-geolocation ol-unselectable ol-control ol-setgeo';
         element.appendChild(button);
 
         super({
@@ -259,7 +244,6 @@
       target: 'map',
       view: view,
       controls: ol.control.defaults.defaults().extend([
-        new RotateNorthControl(),
         new RefreshMap(),
         new SetGeolocation(),
         new ol.control.FullScreen()
